@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - animation - keyframes</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				background-color: #bfe3dd;
+				color: #000;
+				margin: 0;
+				overflow: hidden; /* Prevent scrollbars from popup */
+			}
+
+			a {
+				color: #2983ff;
+			}
+
+			#popup {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				padding: 20px;
+				background-color: white;
+				border: 1px solid #ccc;
+				box-shadow: 0 0 10px rgba(0,0,0,0.5);
+				z-index: 100;
+				display: none; /* Hidden by default */
+				max-width: 300px;
+			}
+			#popup_content {
+				margin-bottom: 10px;
+			}
+			#popup_close {
+				position: absolute;
+				top: 5px;
+				right: 10px;
+				cursor: pointer;
+				font-size: 20px;
+				font-weight: bold;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div id="container"></div>
+
+		<div id="info">
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - animation - keyframes<br/>
+			Model: <a href="https://artstation.com/artwork/1AGwX" target="_blank" rel="noopener">Littlest Tokyo</a> by
+			<a href="https://artstation.com/glenatron" target="_blank" rel="noopener">Glen Fox</a>, CC Attribution.
+		</div>
+
+		<div id="popup">
+			<span id="popup_close">&times;</span>
+			<div id="popup_content"></div>
+		</div>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "./js/three.module.js",
+					"three/addons/libs/stats.module.js": "./js/stats.module.js",
+					"three/addons/controls/OrbitControls.js": "./js/OrbitControls.js",
+					"three/addons/environments/RoomEnvironment.js": "./js/RoomEnvironment.js",
+					"three/addons/loaders/GLTFLoader.js": "./js/GLTFLoader.js",
+					"three/addons/loaders/DRACOLoader.js": "./js/DRACOLoader.js"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+
+			import Stats from 'three/addons/libs/stats.module.js';
+
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+			import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+			let mixer, sceneModel;
+			const clock = new THREE.Clock();
+			const container = document.getElementById( 'container' );
+
+			const stats = new Stats();
+			container.appendChild( stats.dom );
+
+			const renderer = new THREE.WebGLRenderer( { antialias: true } );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			container.appendChild( renderer.domElement );
+
+			const pmremGenerator = new THREE.PMREMGenerator( renderer );
+
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0xbfe3dd );
+			scene.environment = pmremGenerator.fromScene( new RoomEnvironment(), 0.04 ).texture;
+
+			const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 100 );
+			camera.position.set( 5, 2, 8 );
+
+			const controls = new OrbitControls( camera, renderer.domElement );
+			controls.target.set( 0, 0.5, 0 );
+			controls.update();
+			controls.enablePan = false;
+			controls.enableDamping = true;
+
+			const dracoLoader = new DRACOLoader();
+			dracoLoader.setDecoderPath( './js/draco/' );
+
+			const loader = new GLTFLoader();
+			loader.setDRACOLoader( dracoLoader );
+			loader.load( './models/LittlestTokyo.glb', function ( gltf ) {
+
+				sceneModel = gltf.scene;
+				sceneModel.position.set( 1, 1, 0 );
+				sceneModel.scale.set( 0.01, 0.01, 0.01 );
+				scene.add( sceneModel );
+
+				mixer = new THREE.AnimationMixer( sceneModel );
+				mixer.clipAction( gltf.animations[ 0 ] ).play();
+
+				renderer.setAnimationLoop( animate );
+
+				// For debugging: log model structure to identify clickable mesh names
+				console.log("Loaded model:", sceneModel);
+				sceneModel.traverse(function (child) {
+					if (child.isMesh) {
+						console.log("Mesh name:", child.name, child);
+					}
+				});
+
+			}, undefined, function ( e ) {
+
+				console.error( e );
+
+			} );
+
+			const raycaster = new THREE.Raycaster();
+			const mouse = new THREE.Vector2();
+			const popup = document.getElementById('popup');
+			const popupContent = document.getElementById('popup_content');
+			const popupClose = document.getElementById('popup_close');
+
+			popupClose.addEventListener('click', () => {
+				popup.style.display = 'none';
+			});
+
+			function generateLoremIpsum() {
+				const lorem = [
+					"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+					"Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+					"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+					"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+					"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam."
+				];
+				return lorem[Math.floor(Math.random() * lorem.length)];
+			}
+
+			function onMouseClick( event ) {
+				// Calculate mouse position in normalized device coordinates
+				// (-1 to +1) for both components
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				raycaster.setFromCamera( mouse, camera );
+
+				if (sceneModel) {
+					const intersects = raycaster.intersectObject( sceneModel, true );
+
+					if ( intersects.length > 0 ) {
+						const clickedObject = intersects[0].object;
+						console.log("Clicked on:", clickedObject.name, clickedObject);
+
+						// Define clickable mesh names here (these are examples, need to be identified from console log)
+						const clickableMeshes = ["Object649_alpha_glass_0", "Mesh_0_Body_0", "Mesh_1_Windows_0"]; // Actual mesh names for a building window, a vehicle body, and vehicle windows
+
+						if (clickableMeshes.includes(clickedObject.name) || clickableMeshes.includes(clickedObject.parent.name)) {
+							popupContent.textContent = generateLoremIpsum();
+							popup.style.display = 'block';
+						} else {
+							popup.style.display = 'none';
+						}
+					} else {
+						popup.style.display = 'none';
+					}
+				}
+			}
+
+			window.addEventListener( 'click', onMouseClick, false );
+
+			window.onresize = function () {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			};
+
+
+			function animate() {
+
+				const delta = clock.getDelta();
+
+				if (mixer) mixer.update( delta );
+
+				controls.update();
+
+				stats.update();
+
+				renderer.render( scene, camera );
+
+			}
+
+
+		</script>
+
+	</body>
+
+</html>
+
