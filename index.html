@@ -616,7 +616,10 @@
 			}
 
 			// Initialize game UI
-			document.getElementById('start-game').addEventListener('click', startNewGame);
+			document.getElementById('start-game').addEventListener('click', function(event) {
+				event.stopPropagation();
+				startNewGame();
+			});
 
 			window.onresize = function () {
 
