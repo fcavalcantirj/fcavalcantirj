@@ -41,12 +41,90 @@
 				font-size: 20px;
 				font-weight: bold;
 			}
+
+			#game-ui {
+				position: absolute;
+				top: 20px;
+				left: 20px;
+				background-color: rgba(255, 255, 255, 0.9);
+				padding: 15px;
+				border-radius: 8px;
+				box-shadow: 0 0 10px rgba(0,0,0,0.2);
+				z-index: 100;
+				max-width: 400px;
+			}
+
+			#game-story {
+				margin-bottom: 15px;
+				font-size: 16px;
+				line-height: 1.4;
+			}
+
+			#game-stats {
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 10px;
+			}
+
+			#timer {
+				font-weight: bold;
+				color: #e74c3c;
+			}
+
+			#clicks-left {
+				font-weight: bold;
+				color: #2ecc71;
+			}
+
+			#start-game {
+				background-color: #3498db;
+				color: white;
+				border: none;
+				padding: 10px 20px;
+				border-radius: 5px;
+				cursor: pointer;
+				font-size: 16px;
+				transition: background-color 0.3s;
+			}
+
+			#start-game:hover {
+				background-color: #2980b9;
+			}
+
+			@keyframes gameOver {
+				0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+				50% { transform: translate(-50%, -50%) scale(1.1); }
+				100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+			}
+			
+			#popup {
+				transition: all 0.3s ease;
+			}
+			
+			#popup.game-over {
+				background-color: #2c3e50;
+				color: #ecf0f1;
+				border: 2px solid #e74c3c;
+				box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+				font-size: 1.2em;
+				padding: 25px;
+				max-width: 400px;
+			}
 		</style>
 	</head>
 
 	<body>
 
 		<div id="container"></div>
+
+		<div id="game-ui">
+			<div id="game-story"></div>
+			<div id="game-stats">
+				<div id="timer">Time: 3:00</div>
+				<div id="clicks-left">Clicks: 10</div>
+			</div>
+			<button id="start-game">Start New Game</button>
+		</div>
 
 		<div id="info">
 			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - animation - keyframes<br/>
@@ -73,7 +151,255 @@
 		</script>
 
 		<script type="module">
+			// Configuration
+			const API_HOST = 'http://localhost:8080'; // Change this to your deployed API host
+			
+			// Game Logic
+			const stories = [
+				{
+					title: "The Missing Key",
+					description: "A valuable key has gone missing from the Little Tokyo bank. The last person who saw it was the bank manager, who claims to have left it on his desk. However, security footage shows someone entering the building after hours. Find the key and discover who took it.",
+					solution: ["Object649_alpha_glass_0", "Mesh_0_Body_0"],
+					hints: [
+						"Look for a window that might have been used as an entry point",
+						"The thief might have used a vehicle to escape",
+						"Check the building's exterior for any signs of forced entry",
+						"The key might be hidden near where the thief entered",
+						"Look for any unusual objects near the building"
+					]
+				},
+				{
+					title: "The Mysterious Package",
+					description: "A suspicious package was delivered to the main building. Security is concerned it might contain something dangerous. The delivery person was seen acting strangely. Investigate the package and find out what's inside.",
+					solution: ["Mesh_1_Windows_0", "Object649_alpha_glass_0"],
+					hints: [
+						"The package was left near a window",
+						"Look for any unusual objects near the building",
+						"Check the windows for any signs of tampering",
+						"The delivery person might have left something behind",
+						"Look for anything that doesn't belong in the scene"
+					]
+				}
+			];
 
+			const shapeInfo = {
+				"Object649_alpha_glass_0": {
+					name: "Building Window",
+					description: "A large window on the main building. There are signs of forced entry!",
+					location: "Main building facade",
+					angleRange: {
+						minX: 0,
+						maxX: 10,
+						minY: 0,
+						maxY: 5
+					}
+				},
+				"Object649_paintmat_0": {
+					name: "Building Wall",
+					description: "The main wall of the building. Look for any unusual marks or damage.",
+					location: "Main building facade",
+					angleRange: {
+						minX: 0,
+						maxX: 10,
+						minY: 0,
+						maxY: 5
+					}
+				},
+				"Mesh_0_Body_0": {
+					name: "Suspicious Vehicle",
+					description: "A vehicle parked near the building. The driver seems to be watching the entrance.",
+					location: "Street level",
+					angleRange: {
+						minX: 0,
+						maxX: 10,
+						minY: 0,
+						maxY: 5
+					}
+				},
+				"Mesh_1_Windows_0": {
+					name: "Vehicle Windows",
+					description: "The windows of a suspicious vehicle. Something seems off...",
+					location: "Street level",
+					angleRange: {
+						minX: 0,
+						maxX: 10,
+						minY: 0,
+						maxY: 5
+					}
+				}
+			};
+
+			let gameActive = false;
+			let gameTimer;
+			let timeLeft = 180; // 3 minutes in seconds
+			let currentGame = null;
+
+			function generateRandomStory() {
+				return stories[Math.floor(Math.random() * stories.length)];
+			}
+
+			function isCorrectAngle(x, y, angleRange) {
+				return x >= angleRange.minX && x <= angleRange.maxX && 
+					   y >= angleRange.minY && y <= angleRange.maxY;
+			}
+
+			function processClick(shapeName, cameraX, cameraY, cameraZ) {
+				if (!currentGame) {
+					return {
+						clicksLeft: 0,
+						hint: "No active game. Please start a new game.",
+						solved: false
+					};
+				}
+
+				if (currentGame.clicksLeft <= 0) {
+					return {
+						clicksLeft: 0,
+						hint: "You've used all your clicks! Start a new game to continue investigating.",
+						solved: false
+					};
+				}
+
+				currentGame.clicksLeft--;
+
+				const shape = shapeInfo[shapeName];
+				if (!shape) {
+					const messages = [
+						"Focus on the main building and any suspicious vehicles nearby.",
+						"Look for signs of forced entry or unusual activity around the building.",
+						"Check the windows and walls of the main building for clues.",
+						"Pay attention to any vehicles that might have been used in the crime.",
+						"Examine the building's exterior for any signs of tampering.",
+						"Look for anything that seems out of place in the scene."
+					];
+					const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+					
+					return {
+						clicksLeft: currentGame.clicksLeft,
+						hint: randomMessage,
+						solved: false
+					};
+				}
+
+				if (isCorrectAngle(cameraX, cameraY, shape.angleRange)) {
+					if (currentGame.solution.includes(shapeName)) {
+						currentGame.foundPieces++;
+						if (currentGame.foundPieces === currentGame.solution.length) {
+							return {
+								clicksLeft: currentGame.clicksLeft,
+								hint: "🎉 You found all the clues! " + shape.description + "\n\nYou've solved the mystery!",
+								solved: true
+							};
+						}
+						return {
+							clicksLeft: currentGame.clicksLeft,
+							hint: "🔍 You found a crucial clue! " + shape.description + "\n\nYou're getting closer to solving the mystery!",
+							solved: false
+						};
+					}
+
+					return {
+						clicksLeft: currentGame.clicksLeft,
+						hint: "👀 You found something interesting! " + shape.description,
+						solved: false
+					};
+				}
+
+				return {
+					clicksLeft: currentGame.clicksLeft,
+					hint: "From this angle, you can't see anything relevant. Try moving around to get a better view.",
+					solved: false
+				};
+			}
+
+			function startNewGame() {
+				// Clear any existing game state
+				if (gameTimer) {
+					clearInterval(gameTimer);
+				}
+				gameActive = false;
+				currentGame = null;
+
+				// Initialize new game
+				const story = generateRandomStory();
+				currentGame = {
+					story: story.description,
+					solution: story.solution,
+					clicksLeft: 10,
+					foundPieces: 0
+				};
+
+				document.getElementById('game-story').textContent = currentGame.story;
+				document.getElementById('clicks-left').textContent = `Clicks: ${currentGame.clicksLeft}`;
+				gameActive = true;
+				popup.classList.remove('game-over');
+				popup.style.display = 'none';
+				startTimer();
+			}
+
+			// Update click handler to use local functions
+			function onMouseClick(event) {
+				if (!gameActive || isProcessingClick) return;
+
+				// Check if this was a drag/pan movement
+				const mouseUpTime = Date.now();
+				const mouseUpPosition = { x: event.clientX, y: event.clientY };
+				const distance = Math.sqrt(
+					Math.pow(mouseUpPosition.x - mouseDownPosition.x, 2) +
+					Math.pow(mouseUpPosition.y - mouseDownPosition.y, 2)
+				);
+				const duration = mouseUpTime - mouseDownTime;
+
+				if (distance > CLICK_THRESHOLD || duration > CLICK_DURATION) {
+					return;
+				}
+
+				if (!currentGame || currentGame.clicksLeft <= 0) {
+					return;
+				}
+
+				mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+				mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+				raycaster.setFromCamera(mouse, camera);
+
+				if (sceneModel) {
+					const intersects = raycaster.intersectObject(sceneModel, true);
+
+					if (intersects.length > 0) {
+						const clickedObject = intersects[0].object;
+						console.log("Clicked on:", clickedObject.name, clickedObject);
+
+						isProcessingClick = true;
+
+						try {
+							const data = processClick(
+								clickedObject.name,
+								camera.position.x,
+								camera.position.y,
+								camera.position.z
+							);
+
+							console.log('Game Response:', data);
+							updateGameState(data);
+							if (data.hint) {
+								if (data.clicksLeft <= 0) {
+									showGameOver();
+								} else {
+									showHint(data.hint);
+								}
+							}
+						} catch (error) {
+							console.error('Error processing click:', error);
+							showHint("An error occurred. Please try again.");
+						} finally {
+							isProcessingClick = false;
+						}
+					}
+				}
+			}
+
+			// Three.js setup
 			import * as THREE from 'three';
 
 			import Stats from 'three/addons/libs/stats.module.js';
@@ -105,8 +431,8 @@
 			const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 100 );
 			camera.position.set( 5, 2, 8 );
 
-			const controls = new OrbitControls( camera, renderer.domElement );
-			controls.target.set( 0, 0.5, 0 );
+			const controls = new OrbitControls(camera, renderer.domElement);
+			controls.target.set(0, 0.5, 0);
 			controls.update();
 			controls.enablePan = false;
 			controls.enableDamping = true;
@@ -124,7 +450,10 @@
 				scene.add( sceneModel );
 
 				mixer = new THREE.AnimationMixer( sceneModel );
-				mixer.clipAction( gltf.animations[ 0 ] ).play();
+
+				if (gltf.animations && gltf.animations.length > 0) {
+					mixer.clipAction( gltf.animations[ 0 ] ).play();
+				}
 
 				renderer.setAnimationLoop( animate );
 
@@ -152,48 +481,94 @@
 				popup.style.display = 'none';
 			});
 
-			function generateLoremIpsum() {
-				const lorem = [
-					"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-					"Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-					"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-					"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-					"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam."
-				];
-				return lorem[Math.floor(Math.random() * lorem.length)];
+			// Add click outside to close popup
+			window.addEventListener('click', (event) => {
+				if (event.target === popup) {
+					popup.style.display = 'none';
+				}
+			});
+
+			let isProcessingClick = false;
+			let mouseDownTime = 0;
+			let mouseDownPosition = { x: 0, y: 0 };
+			const CLICK_THRESHOLD = 5; // pixels
+			const CLICK_DURATION = 200; // milliseconds
+
+			function onMouseDown(event) {
+				mouseDownTime = Date.now();
+				mouseDownPosition.x = event.clientX;
+				mouseDownPosition.y = event.clientY;
 			}
 
-			function onMouseClick( event ) {
-				// Calculate mouse position in normalized device coordinates
-				// (-1 to +1) for both components
-				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+			window.addEventListener('mousedown', onMouseDown, false);
+			window.addEventListener('click', onMouseClick, false);
 
-				raycaster.setFromCamera( mouse, camera );
+			function endGame() {
+				clearInterval(gameTimer);
+				gameActive = false;
+				popupContent.textContent = "Time's up! The mystery remains unsolved...";
+				popup.style.display = 'block';
+				popup.classList.add('game-over');
+			}
 
-				if (sceneModel) {
-					const intersects = raycaster.intersectObject( sceneModel, true );
-
-					if ( intersects.length > 0 ) {
-						const clickedObject = intersects[0].object;
-						console.log("Clicked on:", clickedObject.name, clickedObject);
-
-						// Define clickable mesh names here (these are examples, need to be identified from console log)
-						const clickableMeshes = ["Object649_alpha_glass_0", "Mesh_0_Body_0", "Mesh_1_Windows_0"]; // Actual mesh names for a building window, a vehicle body, and vehicle windows
-
-						if (clickableMeshes.includes(clickedObject.name) || clickableMeshes.includes(clickedObject.parent.name)) {
-							popupContent.textContent = generateLoremIpsum();
-							popup.style.display = 'block';
-						} else {
-							popup.style.display = 'none';
-						}
-					} else {
+			function showHint(message) {
+				popup.classList.remove('game-over');
+				popupContent.textContent = message;
+				popup.style.display = 'block';
+				// Auto-hide only for regular hints
+				setTimeout(() => {
+					if (!popup.classList.contains('game-over')) {
 						popup.style.display = 'none';
 					}
+				}, 3000);
+			}
+
+			function showGameOver() {
+				popup.classList.add('game-over');
+				popupContent.textContent = "GAME OVER! 🎮\n\nYou've used all your clicks.\nThe mystery remains unsolved...\n\nClick 'Start New Game' to try again!";
+				popup.style.display = 'block';
+				popup.style.animation = 'none';
+				popup.offsetHeight; // Trigger reflow
+				popup.style.animation = 'gameOver 0.5s ease-out';
+			}
+
+			function updateGameState(data) {
+				document.getElementById('clicks-left').textContent = `Clicks: ${data.clicksLeft}`;
+				if (data.solved) {
+					clearInterval(gameTimer);
+					gameActive = false;
+					popup.classList.add('game-over');
+					showHint("🎉 Congratulations! You've solved the mystery! The detective's intuition never fails! 🕵️‍♂️");
+				} else if (data.clicksLeft <= 0) {
+					clearInterval(gameTimer);
+					gameActive = false;
+					showGameOver();
 				}
 			}
 
-			window.addEventListener( 'click', onMouseClick, false );
+			function startTimer() {
+				timeLeft = 180;
+				updateTimerDisplay();
+				
+				gameTimer = setInterval(() => {
+					timeLeft--;
+					updateTimerDisplay();
+					
+					if (timeLeft <= 0) {
+						endGame();
+					}
+				}, 1000);
+			}
+
+			function updateTimerDisplay() {
+				const minutes = Math.floor(timeLeft / 60);
+				const seconds = timeLeft % 60;
+				document.getElementById('timer').textContent = 
+					`Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+			}
+
+			// Initialize game UI
+			document.getElementById('start-game').addEventListener('click', startNewGame);
 
 			window.onresize = function () {
 
@@ -219,6 +594,81 @@
 
 			}
 
+			function cleanup() {
+				window.removeEventListener('resize', onWindowResize);
+				window.removeEventListener('mousedown', onMouseDown);
+				window.removeEventListener('mousemove', onMouseMove);
+				window.removeEventListener('mouseup', onMouseUp);
+				window.removeEventListener('click', onMouseClick);
+
+				if (renderer) {
+					renderer.dispose();
+					document.body.removeChild(renderer.domElement);
+				}
+
+				if (sceneModel) {
+					scene.remove(sceneModel);
+					sceneModel.traverse((object) => {
+						if (object.geometry) object.geometry.dispose();
+						if (object.material) {
+							if (Array.isArray(object.material)) {
+								object.material.forEach(material => material.dispose());
+							} else {
+								object.material.dispose();
+							}
+						}
+					});
+				}
+			}
+
+			window.addEventListener('beforeunload', cleanup);
+
+			function loadModel() {
+				const loader = new THREE.GLTFLoader();
+				const loadingManager = new THREE.LoadingManager();
+
+				loadingManager.onStart = function(url, itemsLoaded, itemsTotal) {
+					console.log('Started loading: ' + url);
+				};
+
+				loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
+					console.log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+				};
+
+				loadingManager.onError = function(url) {
+					console.error('Error loading: ' + url);
+					showHint("Error loading the scene. Please refresh the page.");
+				};
+
+				loadingManager.onLoad = function() {
+					console.log('Loading complete!');
+				};
+
+				loader.setPath('models/');
+				loader.setLoadingManager(loadingManager);
+
+				loader.load(
+					'scene.glb',
+					function(gltf) {
+						sceneModel = gltf.scene;
+						sceneModel.traverse((object) => {
+							if (object.isMesh) {
+								object.material.side = THREE.DoubleSide;
+								object.material.needsUpdate = true;
+							}
+						});
+						scene.add(sceneModel);
+						console.log('Model loaded successfully');
+					},
+					function(xhr) {
+						console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+					},
+					function(error) {
+						console.error('An error happened while loading the model:', error);
+						showHint("Error loading the scene. Please refresh the page.");
+					}
+				);
+			}
 
 		</script>
 

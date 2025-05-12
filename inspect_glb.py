@@ -64,7 +64,7 @@ def get_mesh_names_from_glb(glb_file_path):
         return []
 
 if __name__ == "__main__":
-    model_file = "/home/ubuntu/threejs_clone/models/LittlestTokyo.glb"
+    model_file = "models/LittlestTokyo.glb"
     print(f"Inspecting GLB file: {model_file}\n")
     names = get_mesh_names_from_glb(model_file)
     if names:
