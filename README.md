@@ -3,7 +3,7 @@
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/fcavalcantirj/)
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-black?style=for-the-badge&logo=github)](https://github.com/fcavalcantirj)
 [![Email](https://img.shields.io/badge/Email-Contact-red?style=for-the-badge&logo=gmail)](mailto:felipe.cavalcanti.rj@gmail.com)
-[![Mobile](https://img.shields.io/badge/Mobile-%2B55--21--981328933-green?style=for-the-badge&logo=whatsapp)](tel:+5521981328933)
+
 
 > Building innovative solutions at the intersection of technology and accessibility.
 
