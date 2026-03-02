@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "three": "^0.176.0",
-    "xmlhttprequest": "^1.8.0"
-  }
-}

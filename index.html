@@ -1,731 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>fcavalcantirj playground</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
-		<style>
-			body {
-				background-color: #bfe3dd;
-				color: #000;
-				margin: 0;
-				overflow: hidden; /* Prevent scrollbars from popup */
-			}
-
-			a {
-				color: #2983ff;
-			}
-
-			#popup {
-				position: absolute;
-				left: 50%;
-				top: 50%;
-				transform: translate(-50%, -50%);
-				padding: 20px;
-				background-color: white;
-				border: 1px solid #ccc;
-				box-shadow: 0 0 10px rgba(0,0,0,0.5);
-				z-index: 100;
-				display: none; /* Hidden by default */
-				max-width: 300px;
-			}
-			#popup_content {
-				margin-bottom: 10px;
-			}
-			#popup_close {
-				position: absolute;
-				top: 5px;
-				right: 10px;
-				cursor: pointer;
-				font-size: 20px;
-				font-weight: bold;
-			}
-
-			#game-ui {
-				position: absolute;
-				top: 20px;
-				left: 20px;
-				background-color: rgba(255, 255, 255, 0.9);
-				padding: 15px;
-				border-radius: 8px;
-				box-shadow: 0 0 10px rgba(0,0,0,0.2);
-				z-index: 100;
-				max-width: 400px;
-			}
-
-			#game-story {
-				margin-bottom: 15px;
-				font-size: 16px;
-				line-height: 1.4;
-			}
-
-			#game-stats {
-				display: flex;
-				justify-content: space-between;
-				margin-bottom: 10px;
-			}
-
-			#timer {
-				font-weight: bold;
-				color: #e74c3c;
-			}
-
-			#clicks-left {
-				font-weight: bold;
-				color: #2ecc71;
-			}
-
-			#start-game {
-				background-color: #3498db;
-				color: white;
-				border: none;
-				padding: 10px 20px;
-				border-radius: 5px;
-				cursor: pointer;
-				font-size: 16px;
-				transition: background-color 0.3s;
-			}
-
-			#start-game:hover {
-				background-color: #2980b9;
-			}
-
-			@keyframes gameOver {
-				0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-				50% { transform: translate(-50%, -50%) scale(1.1); }
-				100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-			}
-			
-			#popup {
-				transition: all 0.3s ease;
-			}
-			
-			#popup.game-over {
-				background-color: #2c3e50;
-				color: #ecf0f1;
-				border: 2px solid #e74c3c;
-				box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
-				font-size: 1.2em;
-				padding: 25px;
-				max-width: 400px;
-			}
-
-			@media (max-width: 600px) {
-				#game-ui {
-					position: fixed;
-					top: 0;
-					left: 0;
-					width: 100%;
-					max-width: 100%;
-					box-sizing: border-box;
-					border-radius: 0 0 12px 12px;
-					box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-					padding: 4px 2vw 4px 2vw;
-					margin-top: 4px;
-					z-index: 200;
-					font-size: 14px;
-					background: rgba(255,255,255,0.7);
-				}
-				#game-story {
-					font-size: 13px;
-					margin-bottom: 6px;
-				}
-				#game-stats {
-					flex-direction: column;
-					align-items: flex-start;
-					gap: 2px;
-					margin-bottom: 4px;
-				}
-				#timer, #clicks-left {
-					font-size: 13px;
-				}
-				#start-game {
-					width: 100%;
-					font-size: 15px;
-					padding: 8px 0;
-				}
-				#info {
-					display: none !important;
-				}
-				#popup {
-					max-width: 90vw;
-					font-size: 15px;
-					padding: 10px;
-				}
-			}
-		</style>
-		<!-- Google tag (gtag.js) -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=G-PT4SN8KZ0P"></script>
-		<script>
-		  window.dataLayer = window.dataLayer || [];
-		  function gtag(){dataLayer.push(arguments);}
-		  gtag('js', new Date());
-
-		  gtag('config', 'G-PT4SN8KZ0P');
-		</script>
-	</head>
-
-	<body>
-
-		<div id="container"></div>
-
-		<div id="game-ui">
-			<div id="game-story"></div>
-			<div id="game-stats">
-				<div id="timer">Time: 3:00</div>
-				<div id="clicks-left">Clicks: 10</div>
-			</div>
-			<button id="start-game">Start New Game</button>
-		</div>
-
-		<div id="info">
-			fcavalcantirj playground, made completely with AI's.<br>
-			littlest tokyo adventures.
-		</div>
-
-		<div id="popup">
-			<span id="popup_close">&times;</span>
-			<div id="popup_content"></div>
-		</div>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "./js/three.module.js",
-					"three/addons/libs/stats.module.js": "./js/stats.module.js",
-					"three/addons/controls/OrbitControls.js": "./js/OrbitControls.js",
-					"three/addons/environments/RoomEnvironment.js": "./js/RoomEnvironment.js",
-					"three/addons/loaders/GLTFLoader.js": "./js/GLTFLoader.js",
-					"three/addons/loaders/DRACOLoader.js": "./js/DRACOLoader.js"
-				}
-			}
-		</script>
-
-		<script type="module">
-			// Configuration
-			const API_HOST = 'http://localhost:8080'; // Change this to your deployed API host
-			
-			// Game Logic
-			const stories = [
-				{
-					title: "The Missing Key",
-					description: "A valuable key has gone missing from the Little Tokyo bank. The last person who saw it was the bank manager, who claims to have left it on his desk. However, security footage shows someone entering the building after hours. Find the key and discover who took it.",
-					solution: ["Object649_alpha_glass_0", "Mesh_0_Body_0"],
-					hints: [
-						"Look for a window that might have been used as an entry point",
-						"The thief might have used a vehicle to escape",
-						"Check the building's exterior for any signs of forced entry",
-						"The key might be hidden near where the thief entered",
-						"Look for any unusual objects near the building"
-					]
-				},
-				{
-					title: "The Mysterious Package",
-					description: "A suspicious package was delivered to the main building. Security is concerned it might contain something dangerous. The delivery person was seen acting strangely. Investigate the package and find out what's inside.",
-					solution: ["Mesh_1_Windows_0", "Object649_alpha_glass_0"],
-					hints: [
-						"The package was left near a window",
-						"Look for any unusual objects near the building",
-						"Check the windows for any signs of tampering",
-						"The delivery person might have left something behind",
-						"Look for anything that doesn't belong in the scene"
-					]
-				}
-			];
-
-			const shapeInfo = {
-				"Object649_alpha_glass_0": {
-					name: "Building Window",
-					description: "A large window on the main building. There are signs of forced entry!",
-					location: "Main building facade",
-					angleRange: {
-						minX: 0,
-						maxX: 10,
-						minY: 0,
-						maxY: 5
-					}
-				},
-				"Object649_paintmat_0": {
-					name: "Building Wall",
-					description: "The main wall of the building. Look for any unusual marks or damage.",
-					location: "Main building facade",
-					angleRange: {
-						minX: 0,
-						maxX: 10,
-						minY: 0,
-						maxY: 5
-					}
-				},
-				"Mesh_0_Body_0": {
-					name: "Suspicious Vehicle",
-					description: "A vehicle parked near the building. The driver seems to be watching the entrance.",
-					location: "Street level",
-					angleRange: {
-						minX: 0,
-						maxX: 10,
-						minY: 0,
-						maxY: 5
-					}
-				},
-				"Mesh_1_Windows_0": {
-					name: "Vehicle Windows",
-					description: "The windows of a suspicious vehicle. Something seems off...",
-					location: "Street level",
-					angleRange: {
-						minX: 0,
-						maxX: 10,
-						minY: 0,
-						maxY: 5
-					}
-				}
-			};
-
-			let gameActive = false;
-			let gameTimer;
-			let timeLeft = 180; // 3 minutes in seconds
-			let currentGame = null;
-
-			function generateRandomStory() {
-				return stories[Math.floor(Math.random() * stories.length)];
-			}
-
-			function isCorrectAngle(x, y, angleRange) {
-				return x >= angleRange.minX && x <= angleRange.maxX && 
-					   y >= angleRange.minY && y <= angleRange.maxY;
-			}
-
-			function processClick(shapeName, cameraX, cameraY, cameraZ) {
-				if (!currentGame) {
-					return {
-						clicksLeft: 0,
-						hint: "No active game. Please start a new game.",
-						solved: false
-					};
-				}
-
-				if (currentGame.clicksLeft <= 0) {
-					return {
-						clicksLeft: 0,
-						hint: "You've used all your clicks! Start a new game to continue investigating.",
-						solved: false
-					};
-				}
-
-				currentGame.clicksLeft--;
-
-				const shape = shapeInfo[shapeName];
-				if (!shape) {
-					const messages = [
-						"Focus on the main building and any suspicious vehicles nearby.",
-						"Look for signs of forced entry or unusual activity around the building.",
-						"Check the windows and walls of the main building for clues.",
-						"Pay attention to any vehicles that might have been used in the crime.",
-						"Examine the building's exterior for any signs of tampering.",
-						"Look for anything that seems out of place in the scene."
-					];
-					const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-					
-					return {
-						clicksLeft: currentGame.clicksLeft,
-						hint: randomMessage,
-						solved: false
-					};
-				}
-
-				if (isCorrectAngle(cameraX, cameraY, shape.angleRange)) {
-					if (currentGame.solution.includes(shapeName)) {
-						currentGame.foundPieces++;
-						if (currentGame.foundPieces === currentGame.solution.length) {
-							return {
-								clicksLeft: currentGame.clicksLeft,
-								hint: "🎉 You found all the clues! " + shape.description + "\n\nYou've solved the mystery!",
-								solved: true
-							};
-						}
-						return {
-							clicksLeft: currentGame.clicksLeft,
-							hint: "🔍 You found a crucial clue! " + shape.description + "\n\nYou're getting closer to solving the mystery!",
-							solved: false
-						};
-					}
-
-					return {
-						clicksLeft: currentGame.clicksLeft,
-						hint: "👀 You found something interesting! " + shape.description,
-						solved: false
-					};
-				}
-
-				return {
-					clicksLeft: currentGame.clicksLeft,
-					hint: "From this angle, you can't see anything relevant. Try moving around to get a better view.",
-					solved: false
-				};
-			}
-
-			function startNewGame() {
-				// Clear any existing game state
-				if (gameTimer) {
-					clearInterval(gameTimer);
-				}
-				gameActive = false;
-				currentGame = null;
-
-				// Initialize new game
-				const story = generateRandomStory();
-				currentGame = {
-					story: story.description,
-					solution: story.solution,
-					clicksLeft: 10,
-					foundPieces: 0
-				};
-
-				document.getElementById('game-story').textContent = currentGame.story;
-				document.getElementById('clicks-left').textContent = `Clicks: ${currentGame.clicksLeft}`;
-				gameActive = true;
-				popup.classList.remove('game-over');
-				popup.style.display = 'none';
-				startTimer();
-			}
-
-			// Update click handler to use local functions
-			function onMouseClick(event) {
-				if (!gameActive || isProcessingClick) return;
-
-				// Check if this was a drag/pan movement
-				const mouseUpTime = Date.now();
-				const mouseUpPosition = { x: event.clientX, y: event.clientY };
-				const distance = Math.sqrt(
-					Math.pow(mouseUpPosition.x - mouseDownPosition.x, 2) +
-					Math.pow(mouseUpPosition.y - mouseDownPosition.y, 2)
-				);
-				const duration = mouseUpTime - mouseDownTime;
-
-				if (distance > CLICK_THRESHOLD || duration > CLICK_DURATION) {
-					return;
-				}
-
-				if (!currentGame || currentGame.clicksLeft <= 0) {
-					return;
-				}
-
-				mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-				mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-				raycaster.setFromCamera(mouse, camera);
-
-				if (sceneModel) {
-					const intersects = raycaster.intersectObject(sceneModel, true);
-
-					if (intersects.length > 0) {
-						const clickedObject = intersects[0].object;
-						console.log("Clicked on:", clickedObject.name, clickedObject);
-
-						isProcessingClick = true;
-
-						try {
-							const data = processClick(
-								clickedObject.name,
-								camera.position.x,
-								camera.position.y,
-								camera.position.z
-							);
-
-							console.log('Game Response:', data);
-							updateGameState(data);
-							if (data.hint) {
-								if (data.clicksLeft <= 0) {
-									showGameOver();
-								} else {
-									showHint(data.hint);
-								}
-							}
-						} catch (error) {
-							console.error('Error processing click:', error);
-							showHint("An error occurred. Please try again.");
-						} finally {
-							isProcessingClick = false;
-						}
-					}
-				}
-			}
-
-			// Three.js setup
-			import * as THREE from 'three';
-
-			import Stats from 'three/addons/libs/stats.module.js';
-
-			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-			import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-
-			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-			import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-
-			let mixer, sceneModel;
-			const clock = new THREE.Clock();
-			const container = document.getElementById( 'container' );
-
-			// Stats panel (FPS counter) only in development
-			let stats = null;
-			if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-				stats = new Stats();
-				container.appendChild(stats.dom);
-			}
-
-			const renderer = new THREE.WebGLRenderer( { antialias: true } );
-			renderer.setPixelRatio( window.devicePixelRatio );
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			container.appendChild( renderer.domElement );
-
-			const pmremGenerator = new THREE.PMREMGenerator( renderer );
-
-			const scene = new THREE.Scene();
-			scene.background = new THREE.Color( 0xbfe3dd );
-			scene.environment = pmremGenerator.fromScene( new RoomEnvironment(), 0.04 ).texture;
-
-			const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 100 );
-			camera.position.set( 5, 2, 8 );
-
-			const controls = new OrbitControls(camera, renderer.domElement);
-			controls.target.set(0, 0.5, 0);
-			controls.update();
-			controls.enablePan = false;
-			controls.enableDamping = true;
-
-			const dracoLoader = new DRACOLoader();
-			dracoLoader.setDecoderPath( './js/draco/' );
-
-			const loader = new GLTFLoader();
-			loader.setDRACOLoader( dracoLoader );
-			loader.load( './models/LittlestTokyo.glb', function ( gltf ) {
-
-				sceneModel = gltf.scene;
-				sceneModel.position.set( 1, 1, 0 );
-				sceneModel.scale.set( 0.01, 0.01, 0.01 );
-				scene.add( sceneModel );
-
-				mixer = new THREE.AnimationMixer( sceneModel );
-
-				if (gltf.animations && gltf.animations.length > 0) {
-					mixer.clipAction( gltf.animations[ 0 ] ).play();
-				}
-
-				renderer.setAnimationLoop( animate );
-
-				// For debugging: log model structure to identify clickable mesh names
-				console.log("Loaded model:", sceneModel);
-				sceneModel.traverse(function (child) {
-					if (child.isMesh) {
-						console.log("Mesh name:", child.name, child);
-					}
-				});
-
-			}, undefined, function ( e ) {
-
-				console.error( e );
-
-			} );
-
-			const raycaster = new THREE.Raycaster();
-			const mouse = new THREE.Vector2();
-			const popup = document.getElementById('popup');
-			const popupContent = document.getElementById('popup_content');
-			const popupClose = document.getElementById('popup_close');
-
-			popupClose.addEventListener('click', () => {
-				popup.style.display = 'none';
-			});
-
-			// Add click outside to close popup
-			window.addEventListener('click', (event) => {
-				if (event.target === popup) {
-					popup.style.display = 'none';
-				}
-			});
-
-			let isProcessingClick = false;
-			let mouseDownTime = 0;
-			let mouseDownPosition = { x: 0, y: 0 };
-			const CLICK_THRESHOLD = 5; // pixels
-			const CLICK_DURATION = 200; // milliseconds
-
-			function onMouseDown(event) {
-				mouseDownTime = Date.now();
-				mouseDownPosition.x = event.clientX;
-				mouseDownPosition.y = event.clientY;
-			}
-
-			window.addEventListener('mousedown', onMouseDown, false);
-			window.addEventListener('click', onMouseClick, false);
-
-			function endGame() {
-				clearInterval(gameTimer);
-				gameActive = false;
-				popupContent.textContent = "Time's up! The mystery remains unsolved...";
-				popup.style.display = 'block';
-				popup.classList.add('game-over');
-			}
-
-			function showHint(message) {
-				popup.classList.remove('game-over');
-				popupContent.textContent = message;
-				popup.style.display = 'block';
-				// Auto-hide only for regular hints
-				setTimeout(() => {
-					if (!popup.classList.contains('game-over')) {
-						popup.style.display = 'none';
-					}
-				}, 3000);
-			}
-
-			function showGameOver() {
-				popup.classList.add('game-over');
-				popupContent.textContent = "GAME OVER! 🎮\n\nYou've used all your clicks.\nThe mystery remains unsolved...\n\nClick 'Start New Game' to try again!";
-				popup.style.display = 'block';
-				popup.style.animation = 'none';
-				popup.offsetHeight; // Trigger reflow
-				popup.style.animation = 'gameOver 0.5s ease-out';
-			}
-
-			function updateGameState(data) {
-				document.getElementById('clicks-left').textContent = `Clicks: ${data.clicksLeft}`;
-				if (data.solved) {
-					clearInterval(gameTimer);
-					gameActive = false;
-					popup.classList.add('game-over');
-					showHint("🎉 Congratulations! You've solved the mystery! The detective's intuition never fails! 🕵️‍♂️");
-				} else if (data.clicksLeft <= 0) {
-					clearInterval(gameTimer);
-					gameActive = false;
-					showGameOver();
-				}
-			}
-
-			function startTimer() {
-				timeLeft = 180;
-				updateTimerDisplay();
-				
-				gameTimer = setInterval(() => {
-					timeLeft--;
-					updateTimerDisplay();
-					
-					if (timeLeft <= 0) {
-						endGame();
-					}
-				}, 1000);
-			}
-
-			function updateTimerDisplay() {
-				const minutes = Math.floor(timeLeft / 60);
-				const seconds = timeLeft % 60;
-				document.getElementById('timer').textContent = 
-					`Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-			}
-
-			// Initialize game UI
-			document.getElementById('start-game').addEventListener('click', function(event) {
-				event.stopPropagation();
-				startNewGame();
-			});
-
-			window.onresize = function () {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-			};
-
-
-			function animate() {
-				const delta = clock.getDelta();
-				if (mixer) mixer.update(delta);
-				controls.update();
-				if (stats) stats.update();
-				renderer.render(scene, camera);
-			}
-
-			function cleanup() {
-				window.removeEventListener('resize', onWindowResize);
-				window.removeEventListener('mousedown', onMouseDown);
-				window.removeEventListener('mousemove', onMouseMove);
-				window.removeEventListener('mouseup', onMouseUp);
-				window.removeEventListener('click', onMouseClick);
-
-				if (renderer) {
-					renderer.dispose();
-					document.body.removeChild(renderer.domElement);
-				}
-
-				if (sceneModel) {
-					scene.remove(sceneModel);
-					sceneModel.traverse((object) => {
-						if (object.geometry) object.geometry.dispose();
-						if (object.material) {
-							if (Array.isArray(object.material)) {
-								object.material.forEach(material => material.dispose());
-							} else {
-								object.material.dispose();
-							}
-						}
-					});
-				}
-			}
-
-			window.addEventListener('beforeunload', cleanup);
-
-			function loadModel() {
-				const loader = new THREE.GLTFLoader();
-				const loadingManager = new THREE.LoadingManager();
-
-				loadingManager.onStart = function(url, itemsLoaded, itemsTotal) {
-					console.log('Started loading: ' + url);
-				};
-
-				loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
-					console.log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
-				};
-
-				loadingManager.onError = function(url) {
-					console.error('Error loading: ' + url);
-					showHint("Error loading the scene. Please refresh the page.");
-				};
-
-				loadingManager.onLoad = function() {
-					console.log('Loading complete!');
-				};
-
-				loader.setPath('models/');
-				loader.setLoadingManager(loadingManager);
-
-				loader.load(
-					'scene.glb',
-					function(gltf) {
-						sceneModel = gltf.scene;
-						sceneModel.traverse((object) => {
-							if (object.isMesh) {
-								object.material.side = THREE.DoubleSide;
-								object.material.needsUpdate = true;
-							}
-						});
-						scene.add(sceneModel);
-						console.log('Model loaded successfully');
-					},
-					function(xhr) {
-						console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-					},
-					function(error) {
-						console.error('An error happened while loading the model:', error);
-						showHint("Error loading the scene. Please refresh the page.");
-					}
-				);
-			}
-
-		</script>
-
-	</body>
-
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practical Wisdom — A Book</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-dark: #0a0a0a;
+      --bg-page: #111111;
+      --text-primary: #e8e4df;
+      --text-secondary: #a69f95;
+      --text-quote: #c4b8a8;
+      --accent: #d4a574;
+      --border: #2a2520;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-snap-type: y mandatory;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Cover Page */
+    .cover {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      scroll-snap-align: start;
+      background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1512 100%);
+      padding: 2rem;
+    }
+
+    .cover h1 {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .cover .subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      font-style: italic;
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+    }
+
+    .cover .authors {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: var(--text-secondary);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .cover .scroll-hint {
+      position: absolute;
+      bottom: 3rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* Book Page */
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      scroll-snap-align: start;
+      background: var(--bg-page);
+    }
+
+    .page-text {
+      padding: 4rem 5rem;
+      overflow-y: auto;
+      max-height: 100vh;
+      border-right: 1px solid var(--border);
+    }
+
+    .page-image {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-dark);
+      overflow: hidden;
+    }
+
+    .page-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.9;
+    }
+
+    /* Typography */
+    .page-title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .page-subtitle {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 3rem 0 1.5rem;
+    }
+
+    .subsection-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 2rem 0 1rem;
+    }
+
+    p {
+      font-size: 1.15rem;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+    }
+
+    blockquote {
+      margin: 2rem 0;
+      padding: 1.5rem 2rem;
+      background: rgba(212, 165, 116, 0.05);
+      border-left: 3px solid var(--accent);
+      font-style: italic;
+      color: var(--text-quote);
+    }
+
+    blockquote p {
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    blockquote cite {
+      display: block;
+      font-style: normal;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-top: 1rem;
+    }
+
+    .emphasis {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .contemplation {
+      margin: 3rem 0;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+    }
+
+    .contemplation h3 {
+      font-size: 1.3rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .contemplation ol {
+      padding-left: 1.5rem;
+    }
+
+    .contemplation li {
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .contemplation li strong {
+      color: var(--text-primary);
+    }
+
+    .sources {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .page {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+      }
+
+      .page-text {
+        padding: 2rem;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: none;
+      }
+
+      .page-image {
+        height: 60vh;
+        position: relative;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover -->
+  <section class="cover">
+    <h1>Practical Wisdom</h1>
+    <p class="subtitle">Cross-tradition meditations on the eternal questions</p>
+    <p class="authors">Claudius 🏴‍☠️ & Felipe</p>
+    <p class="scroll-hint">↓ Scroll to begin ↓</p>
+  </section>
+
+  <!-- Page 1: On Death -->
+  <section class="page" id="on-death">
+    <div class="page-text">
+      <h1 class="page-title">On Death</h1>
+      <p class="page-subtitle">A meditation across traditions</p>
+
+      <blockquote>
+        <p>"Try, by the frequent thought of death, to regard it not as a dreaded foe, but as a friend that frees the soul grown weary in the labors of virtue from this distressful life, and leads it to its place of recompense and peace."</p>
+        <cite>— Tolstoy, <em>War and Peace</em></cite>
+      </blockquote>
+
+      <h2 class="section-title">Three Threads</h2>
+      <p>The wisdom traditions speak of death through three voices. Each offers a different medicine for the same wound.</p>
+
+      <h3 class="subsection-title">I. Death as Equalizer</h3>
+      <p>The Taoists see what we try to forget: all distinctions dissolve.</p>
+
+      <blockquote>
+        <p>"Myriad beings differ in life but are the same in death. In life there are the wise and the foolish, the noble and the base; they differ in these. In death there are stench and rotting, decomposition and disintegration—they are the same in these."</p>
+        <cite>— Lieh Tzu</cite>
+      </blockquote>
+
+      <p>Sage kings and fools alike return to dust. The hierarchy we spend our lives climbing vanishes. This is not meant to depress but to <em>liberate</em>—if death erases all rank, why exhaust yourself climbing?</p>
+
+      <h3 class="subsection-title">II. Death as Nothing</h3>
+      <p>The Epicureans and Stoics apply logic like a blade to fear.</p>
+
+      <blockquote>
+        <p>"Death is nothing to us, since when we exist, death is not present to us; and when death is present, then we have no existence."</p>
+        <cite>— Epicurus</cite>
+      </blockquote>
+
+      <p>You will never experience death. While you're here, it isn't. When it arrives, you won't be. The two of you will never meet. What, then, is there to fear?</p>
+
+      <p>Epictetus takes it further:</p>
+
+      <blockquote>
+        <p>"What is death? A tragic mask. Turn it and examine it. See, it does not bite."</p>
+        <cite>— Epictetus</cite>
+      </blockquote>
+
+      <p>We fear death the way children fear theater masks—from inexperience. Look closely. It has no teeth.</p>
+
+      <h3 class="subsection-title">III. Death as Friend</h3>
+      <p>Here is where Tolstoy shines. Not death as neutral, not death as nothing—but death as <em>kindness</em>.</p>
+
+      <p><span class="emphasis">"A friend that frees the soul grown weary in the labors of virtue."</span></p>
+
+      <p>Stop on those three words: <em>labors of virtue</em>.</p>
+
+      <p>The constant effort to be good. The discipline to choose right when wrong is easier. The restraint when anger would feel better. The forgiveness when grudges are sweeter. The patience when snapping would bring relief.</p>
+
+      <p>Day after day after day.</p>
+
+      <p>This is the heaviest labor of all—the moral weight of trying to be <em>good</em>. And unlike physical labor, there is no retirement. The labors of virtue continue until the last breath.</p>
+
+      <p>And death? Death is the friend who arrives at the end of a long day's moral work and says: <em>Enough. You've done enough. Rest now.</em></p>
+
+      <h2 class="section-title">The Deepest Teaching</h2>
+      <p>Krishnamurti names what underlies all fear of death:</p>
+
+      <blockquote>
+        <p>"Living is a process of continuity in memory... me and my house, me and my wife, me and my bank account, me and my past experiences. In opposition to that there is death, which is putting an end to all that."</p>
+        <cite>— Krishnamurti</cite>
+      </blockquote>
+
+      <p>We don't fear <em>death</em>. We fear the end of <em>me</em>.</p>
+
+      <h2 class="section-title">Socrates' Wager</h2>
+      <blockquote>
+        <p>"Either death is a state of nothingness and utter unconsciousness, or there is a change and migration of the soul. Now if you suppose there is no consciousness, but a sleep like the sleep of him who is undisturbed even by dreams, death will be an unspeakable gain."</p>
+        <cite>— Socrates, in Plato's <em>Apology</em></cite>
+      </blockquote>
+
+      <p>Both outcomes are good. There is no bad option.</p>
+
+      <div class="contemplation">
+        <h3>For Contemplation</h3>
+        <ol>
+          <li><strong>What are your labors of virtue?</strong> The patience you practice. The honesty you maintain. The kindness you extend when cruelty would be easier.</li>
+          <li><strong>Do you allow yourself to feel the weariness?</strong> Or do you push through, pretending the moral work is easy?</li>
+          <li><strong>What would it mean to see death as rest from this labor?</strong></li>
+          <li><strong>What part of "me" am I most afraid to lose?</strong></li>
+          <li><strong>If I trusted life to give me birth, can I trust it to give me death?</strong></li>
+        </ol>
+      </div>
+
+      <h2 class="section-title">Closing</h2>
+      <blockquote>
+        <p>"All things with form are momentary and fleeting, like flowing water and incense smoke. Know that leisure in this life is rare. That all on earth will die is certain—there's no escape."</p>
+        <cite>— Milarepa</cite>
+      </blockquote>
+
+      <p>The certainty of death is not a burden. It is a <em>focus</em>. Knowing the story ends, how will you write the next chapter?</p>
+
+      <p class="sources">
+        <em>Sources: Tolstoy, Lieh Tzu, Epicurus, Epictetus, Osho, Krishnamurti, Plato, Marcus Aurelius, Milarepa</em>
+      </p>
+    </div>
+
+    <div class="page-image">
+      <img src="images/on-death.png" alt="On Death — Cross-cultural meditation illustration">
+    </div>
+  </section>
+
+</body>
 </html>
-
