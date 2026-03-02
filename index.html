@@ -260,6 +260,12 @@
       transform: scale(0.95);
     }
 
+    /* Chapter links */
+    nav a:hover {
+      border-color: var(--accent) !important;
+      background: rgba(212, 165, 116, 0.05);
+    }
+
     /* Mobile */
     @media (max-width: 900px) {
       .page {
@@ -297,13 +303,24 @@
     <p class="scroll-hint">↓ Scroll to begin ↓</p>
   </section>
 
-  <!-- Summary -->
-  <section class="cover" id="summary">
-    <div style="max-width: 700px; text-align: left;">
-      <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: var(--accent);">What is this?</h2>
-      <p style="font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--text-primary);">A collection of meditations on life's deepest questions — death, suffering, meaning, virtue — drawn from wisdom traditions across time and culture.</p>
-      <p style="font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--text-secondary);">Each page weaves together voices from Stoicism, Taoism, Buddhism, Christianity, and modern thinkers. Not to preach answers, but to illuminate the question from many angles.</p>
-      <p style="font-size: 1.1rem; color: var(--text-secondary); font-style: italic;">Scroll through slowly. Let the words settle. Return when life demands reflection.</p>
+  <!-- Table of Contents -->
+  <section class="cover" id="contents">
+    <div style="max-width: 600px; text-align: left;">
+      <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; font-family: 'Inter', sans-serif;">Contents</h2>
+      <div style="width: 60px; height: 1px; background: var(--accent); margin-bottom: 3rem;"></div>
+      
+      <nav style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <a href="#concept-of-death" style="text-decoration: none; display: block; padding: 1.5rem; border: 1px solid var(--border); transition: all 0.3s ease;">
+          <span style="font-size: 0.85rem; color: var(--accent); font-family: 'Inter', sans-serif; letter-spacing: 0.1em;">I</span>
+          <h3 style="font-size: 1.8rem; color: var(--text-primary); margin: 0.5rem 0; font-weight: 400;">Concept of Death</h3>
+          <p style="font-size: 1rem; color: var(--text-secondary); margin: 0;">How wisdom traditions approach mortality — as equalizer, as nothing, as friend.</p>
+        </a>
+        
+        <!-- Future chapters will be added here -->
+        
+      </nav>
+      
+      <p style="margin-top: 3rem; font-size: 0.9rem; color: var(--text-secondary); font-style: italic;">More chapters coming soon...</p>
     </div>
   </section>
 
