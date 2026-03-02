@@ -223,6 +223,43 @@
       color: var(--text-secondary);
     }
 
+    /* Font Size Controls */
+    .font-controls {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 1000;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .font-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 1px solid var(--border);
+      background: rgba(10, 10, 10, 0.9);
+      color: var(--text-secondary);
+      font-family: 'Inter', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 300;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .font-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(20, 18, 15, 0.95);
+    }
+
+    .font-btn:active {
+      transform: scale(0.95);
+    }
+
     /* Mobile */
     @media (max-width: 900px) {
       .page {
@@ -245,6 +282,12 @@
   </style>
 </head>
 <body>
+
+  <!-- Font Size Controls -->
+  <div class="font-controls">
+    <button class="font-btn" id="font-minus" title="Decrease text size">−</button>
+    <button class="font-btn" id="font-plus" title="Increase text size">+</button>
+  </div>
 
   <!-- Cover -->
   <section class="cover">
@@ -358,6 +401,40 @@
       <img src="images/on-death.png" alt="On Death — Cross-cultural meditation illustration">
     </div>
   </section>
+
+  <script>
+    (function() {
+      const MIN_SIZE = 80;
+      const MAX_SIZE = 150;
+      const STEP = 10;
+      const STORAGE_KEY = 'wisdom-font-size';
+
+      // Get saved size or default to 100%
+      let currentSize = parseInt(localStorage.getItem(STORAGE_KEY)) || 100;
+      
+      // Apply initial size
+      applySize(currentSize);
+
+      document.getElementById('font-minus').addEventListener('click', function() {
+        if (currentSize > MIN_SIZE) {
+          currentSize -= STEP;
+          applySize(currentSize);
+        }
+      });
+
+      document.getElementById('font-plus').addEventListener('click', function() {
+        if (currentSize < MAX_SIZE) {
+          currentSize += STEP;
+          applySize(currentSize);
+        }
+      });
+
+      function applySize(size) {
+        document.documentElement.style.fontSize = size + '%';
+        localStorage.setItem(STORAGE_KEY, size);
+      }
+    })();
+  </script>
 
 </body>
 </html>
