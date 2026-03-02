@@ -260,10 +260,25 @@
       transform: scale(0.95);
     }
 
-    /* Chapter links */
-    nav a:hover {
-      border-color: var(--accent) !important;
-      background: rgba(212, 165, 116, 0.05);
+    /* Table of Contents */
+    .toc {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .toc a {
+      font-size: 1.15rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .toc a:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
     }
 
     /* Mobile */
@@ -305,22 +320,13 @@
 
   <!-- Table of Contents -->
   <section class="cover" id="contents">
-    <div style="max-width: 600px; text-align: left;">
-      <h2 style="font-size: 2rem; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; font-family: 'Inter', sans-serif;">Contents</h2>
-      <div style="width: 60px; height: 1px; background: var(--accent); margin-bottom: 3rem;"></div>
+    <div style="max-width: 500px; text-align: left;">
+      <h2 style="font-size: 1.5rem; margin-bottom: 2rem; color: var(--text-secondary); font-weight: 400; letter-spacing: 0.3em; text-transform: uppercase; font-family: 'Inter', sans-serif;">Contents</h2>
       
-      <nav style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <a href="#concept-of-death" style="text-decoration: none; display: block; padding: 1.5rem; border: 1px solid var(--border); transition: all 0.3s ease;">
-          <span style="font-size: 0.85rem; color: var(--accent); font-family: 'Inter', sans-serif; letter-spacing: 0.1em;">I</span>
-          <h3 style="font-size: 1.8rem; color: var(--text-primary); margin: 0.5rem 0; font-weight: 400;">Concept of Death</h3>
-          <p style="font-size: 1rem; color: var(--text-secondary); margin: 0;">How wisdom traditions approach mortality — as equalizer, as nothing, as friend.</p>
-        </a>
-        
-        <!-- Future chapters will be added here -->
-        
+      <nav class="toc">
+        <a href="#concept-of-death">I. Concept of Death</a>
+        <!-- Future chapters -->
       </nav>
-      
-      <p style="margin-top: 3rem; font-size: 0.9rem; color: var(--text-secondary); font-style: italic;">More chapters coming soon...</p>
     </div>
   </section>
 
