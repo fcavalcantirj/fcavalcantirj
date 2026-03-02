@@ -260,25 +260,40 @@
       transform: scale(0.95);
     }
 
-    /* Table of Contents */
+    /* Table of Contents Page */
+    .toc-page {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      background: var(--bg-page);
+      padding: 5rem;
+    }
+
+    .toc-page h2 {
+      font-size: 1.3rem;
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
     .toc {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.6rem;
     }
 
     .toc a {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       color: var(--text-primary);
       text-decoration: none;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid transparent;
-      transition: all 0.2s ease;
+      padding: 0.3rem 0;
+      transition: color 0.2s ease;
     }
 
     .toc a:hover {
       color: var(--accent);
-      border-bottom-color: var(--accent);
     }
 
     /* Mobile */
@@ -319,15 +334,12 @@
   </section>
 
   <!-- Table of Contents -->
-  <section class="cover" id="contents">
-    <div style="max-width: 500px; text-align: left;">
-      <h2 style="font-size: 1.5rem; margin-bottom: 2rem; color: var(--text-secondary); font-weight: 400; letter-spacing: 0.3em; text-transform: uppercase; font-family: 'Inter', sans-serif;">Contents</h2>
-      
-      <nav class="toc">
-        <a href="#concept-of-death">I. Concept of Death</a>
-        <!-- Future chapters -->
-      </nav>
-    </div>
+  <section class="toc-page" id="contents">
+    <h2>Contents</h2>
+    <nav class="toc">
+      <a href="#concept-of-death">I. Concept of Death</a>
+      <!-- Future chapters -->
+    </nav>
   </section>
 
   <!-- Page 1: Concept of Death -->
